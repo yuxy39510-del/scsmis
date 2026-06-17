@@ -203,7 +203,7 @@ INSERT INTO t_stu_course (f_course_id, f_teach_id, f_stu_id, f_score, f_memo) VA
 
 -- ----------------------------
 -- 8. 教师授课视图 v_teacher_course
--- 字段：课程编号、课程名称、教师工号、教师姓名、职称、授课时间、授课地点
+-- 字段：课程编号、课程名称、教师工号、教师姓名、职称、授课时间、授课地点、选课人数
 -- ----------------------------
 DROP VIEW IF EXISTS v_teacher_course;
 CREATE VIEW v_teacher_course AS
@@ -214,7 +214,11 @@ SELECT
     t.f_name                AS 教师姓名,
     t.f_title               AS 职称,
     tc.f_time               AS 授课时间,
-    tc.f_place              AS 授课地点
+    tc.f_place              AS 授课地点,
+    (SELECT COUNT(*)
+     FROM t_stu_course sc
+     WHERE sc.f_course_id = tc.f_course_id
+       AND sc.f_teach_id  = tc.f_teach_id) AS 选课人数
 FROM t_teach_course tc
 JOIN t_course c  ON tc.f_course_id = c.f_course_id
 JOIN t_teacher t ON tc.f_teach_id  = t.f_teach_id;

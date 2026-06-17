@@ -59,11 +59,11 @@
     <div class="table-responsive">
         <table class="table" aria-label="教师授课视图">
             <thead>
-                <tr><th>课程编号</th><th>课程名称</th><th>教师工号</th><th>教师姓名</th><th>职称</th><th>授课时间</th><th>授课地点</th></tr>
+                <tr><th>课程编号</th><th>课程名称</th><th>教师工号</th><th>教师姓名</th><th>职称</th><th>授课时间</th><th>授课地点</th><th>选课人数</th></tr>
             </thead>
             <tbody>
                 <% if (courses.length === 0) { %>
-                <tr><td colspan="7"><div class="empty-state"><i class="bi bi-inbox"></i><p>暂无授课记录<br>待教师安排课程后，数据将在此处展示</p></div></td></tr>
+                <tr><td colspan="8"><div class="empty-state"><i class="bi bi-inbox"></i><p>暂无授课记录<br>待教师安排课程后，数据将在此处展示</p></div></td></tr>
                 <% } %>
                 <% courses.forEach(r => { %>
                 <tr>
@@ -74,6 +74,7 @@
                     <td><span class="badge bg-soft-primary text-primary"><%= r['职称'] %></span></td>
                     <td><%= r['授课时间'] %></td>
                     <td><%= r['授课地点'] %></td>
+                    <td><span class="badge bg-success"><%= r['选课人数'] || 0 %></span></td>
                 </tr>
                 <% }) %>
             </tbody>
