@@ -1,0 +1,49 @@
+<%- include('header', { title: '学生选课视图' }) %>
+
+<div class="page-header">
+    <h4><i class="bi bi-card-list"></i> 学生选课视图</h4>
+    <p>此视图展示学生选课、成绩、学院专业的完整信息 — 对应数据库视图 <span class="badge bg-success">v_student_course</span></p>
+</div>
+
+<div class="table-container">
+    <div class="table-toolbar">
+        <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input id="searchEnroll" type="text" class="form-control" placeholder="搜索选课记录..." aria-label="搜索选课记录">
+        </div>
+        <span class="toolbar-info" id="searchEnroll-count">共 <%= enrollments.length %> 条记录</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table" aria-label="学生选课视图">
+            <thead>
+                <tr><th>教师工号</th><th>课程编号</th><th>课程名称</th><th>学生学号</th><th>学生姓名</th><th>学院</th><th>专业</th><th>分数</th></tr>
+            </thead>
+            <tbody>
+                <% if (enrollments.length === 0) { %>
+                <tr><td colspan="8"><div class="empty-state"><i class="bi bi-inbox"></i><p>暂无选课记录<br>待学生选课后，数据将在此处展示</p></div></td></tr>
+                <% } %>
+                <% enrollments.forEach(r => { %>
+                <tr>
+                    <td><span class="badge bg-info"><%= r['教师工号'] %></span></td>
+                    <td><%= r['课程编号'] %></td>
+                    <td><strong><%= r['课程名称'] %></strong></td>
+                    <td><span class="badge bg-success"><%= r['学生学号'] %></span></td>
+                    <td><%= r['学生姓名'] %></td>
+                    <td><%= r['学院名称'] %></td>
+                    <td><%= r['专业'] %></td>
+                    <td>
+                        <% if (r['分数'] !== null) { %>
+                            <span class="fw-bold text-success"><%= r['分数'] %></span>
+                        <% } else { %>
+                            <span class="badge bg-soft-primary text-primary">修读中</span>
+                        <% } %>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>initTableSearch('searchEnroll', '.table-container');</script>
+<%- include('footer') %>

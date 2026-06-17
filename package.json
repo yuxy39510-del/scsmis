@@ -1,0 +1,23 @@
+{
+  "name": "scsmis-web",
+  "version": "1.0.0",
+  "description": "学生选课管理系统 Web 界面",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.17",
+    "archiver": "^8.0.0",
+    "bootstrap": "^5.3.0",
+    "bootstrap-icons": "^1.11.0",
+    "chart.js": "^4.5.1",
+    "docx": "^9.7.1",
+    "dotenv": "^17.4.2",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "mammoth": "^1.12.0",
+    "mysql2": "^3.6.0"
+  }
+}

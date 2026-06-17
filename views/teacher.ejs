@@ -1,0 +1,94 @@
+<%- include('header', { title: '教师管理' }) %>
+
+<div class="page-header">
+    <h4><i class="bi bi-person-workspace"></i> 教师管理</h4>
+    <p>管理教师信息，关联所属学院</p>
+</div>
+
+<% if (typeof msg !== 'undefined' && msg) { %>
+<div class="alert alert-danger" role="alert"><i class="bi bi-exclamation-triangle"></i> <%= msg %></div>
+<% } %>
+
+<div class="card add-card mb-4">
+    <div class="card-header"><i class="bi bi-plus-circle"></i> <span id="formTitle">添加教师</span></div>
+    <div class="card-body">
+        <form method="POST" action="/teacher/add" class="row g-2 align-items-end" data-original-action="/teacher/add" data-original-btn='<i class="bi bi-check-lg"></i> 添加' data-editing="0">
+            <div class="col-md-2"><label class="form-label required">工号</label><input name="f_teach_id" class="form-control" placeholder="工号" required></div>
+            <div class="col-md-2"><label class="form-label required">姓名</label><input name="f_name" class="form-control" placeholder="姓名" required></div>
+            <div class="col-md-1"><label class="form-label">性别</label><select name="f_sex" class="form-select"><option>男</option><option>女</option></select></div>
+            <div class="col-md-2"><label class="form-label required">职称</label>
+                <select name="f_title" class="form-select"><option>教授</option><option>副教授</option><option>讲师</option><option>助教</option><option>高工</option></select>
+            </div>
+            <div class="col-md-2"><label class="form-label required">学院</label>
+                <select name="f_college_id" class="form-select">
+                    <% colleges.forEach(c => { %><option value="<%= c.f_college_id %>"><%= c.f_name %></option><% }) %>
+                </select>
+            </div>
+            <div class="col-md-1"><label class="form-label">电话</label><input name="f_tel" class="form-control" placeholder="电话"></div>
+            <div class="col-md-1"><label class="form-label">备注</label><input name="f_memo" class="form-control" placeholder="备注"></div>
+            <div class="col-md-1"><button type="submit" class="btn btn-primary w-100"><i class="bi bi-check-lg"></i> 添加</button></div>
+        </form>
+    </div>
+</div>
+
+<div class="table-container">
+    <div class="table-toolbar">
+        <form method="GET" action="/teacher" class="search-box">
+            <i class="bi bi-search"></i>
+            <input name="q" value="<%= typeof q !== 'undefined' && q ? q : '' %>" type="search" class="form-control" placeholder="搜索教师（全库）..." aria-label="搜索教师">
+        </form>
+        <span class="toolbar-info">共 <%= teachers.length %> 条记录</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table" aria-label="教师列表">
+            <thead>
+                <tr><th>工号</th><th>姓名</th><th>性别</th><th>职称</th><th>学院</th><th>电话</th><th>备注</th><th style="width:130px">操作</th></tr>
+            </thead>
+            <tbody>
+                <% if (teachers.length === 0) { %>
+                <tr><td colspan="8"><div class="empty-state"><i class="bi bi-inbox"></i><p>还没有教师信息<br>请在上方添加第一位教师</p></div></td></tr>
+                <% } %>
+                <% teachers.forEach(t => { %>
+                <tr>
+                    <td><span class="badge bg-info"><%= t.f_teach_id %></span></td>
+                    <td><strong><%= t.f_name %></strong></td>
+                    <td><%= t.f_sex %></td>
+                    <td><span class="badge bg-soft-primary text-primary"><%= t.f_title %></span></td>
+                    <td><%= t.college_name %><%- t.college_name ? '' : '<span class="empty-value">&ndash;</span>' %></td>
+                    <td><%= t.f_tel %><%- t.f_tel ? '' : '<span class="empty-value">&ndash;</span>' %></td>
+                    <td><%= t.f_memo %><%- t.f_memo ? '' : '<span class="empty-value">&ndash;</span>' %></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" title="编辑"
+                            onclick="enableEdit(this,'teacher','<%= t.f_teach_id %>',[
+                                {name:'f_name',value:'<%= t.f_name.replace(/'/g, "\\'") %>'},
+                                {name:'f_sex',value:'<%= t.f_sex %>'},
+                                {name:'f_title',value:'<%= t.f_title %>'},
+                                {name:'f_college_id',value:'<%= t.f_college_id %>'},
+                                {name:'f_tel',value:'<%= (t.f_tel||'').replace(/'/g, "\\'") %>'},
+                                {name:'f_memo',value:'<%= (t.f_memo||'').replace(/'/g, "\\'") %>'}
+                            ]); document.getElementById('formTitle').textContent='编辑教师：<%= t.f_teach_id %>'">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <form method="POST" action="/teacher/delete/<%= t.f_teach_id %>" style="display:inline" onsubmit="return confirmDelete(event, '<%= t.f_name %>')">
+                            <button class="btn btn-sm btn-outline-danger" title="删除教师"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+    <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+    <nav class="d-flex justify-content-center mt-3">
+        <ul class="pagination pagination-sm">
+            <li class="page-item <%= page <= 1 ? 'disabled' : '' %>"><a class="page-link" href="?page=<%= page-1 %><%= q ? '&q=' + encodeURIComponent(q) : '' %>">&laquo;</a></li>
+            <% for (let i = 1; i <= totalPages; i++) { %>
+            <li class="page-item <%= i === page ? 'active' : '' %>"><a class="page-link" href="?page=<%= i %><%= q ? '&q=' + encodeURIComponent(q) : '' %>"><%= i %></a></li>
+            <% } %>
+            <li class="page-item <%= page >= totalPages ? 'disabled' : '' %>"><a class="page-link" href="?page=<%= page+1 %><%= q ? '&q=' + encodeURIComponent(q) : '' %>">&raquo;</a></li>
+        </ul>
+    </nav>
+    <% } %>
+</div>
+
+<%- include('footer') %>

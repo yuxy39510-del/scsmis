@@ -1,0 +1,156 @@
+<%- include('header', { title: '学生选课操作' }) %>
+
+<div class="page-header">
+    <h4><i class="bi bi-pencil-square"></i> 学生选课操作</h4>
+    <p>选择学生后查看已选课程和学分，然后为其选课。总学分达100时触发器会拦截。</p>
+</div>
+
+<% if (typeof msg !== 'undefined' && msg) { %>
+<div class="alert alert-<%= msg.type %>" role="alert">
+    <i class="bi <%= msg.type === 'success' ? 'bi-check-circle' : 'bi-exclamation-triangle' %>"></i>
+    <span><%= msg.text %></span>
+</div>
+<% } %>
+
+<!-- 步骤指示器 -->
+<div class="step-indicator">
+    <div class="step-item active">
+        <span class="step-num">1</span> 选择学生
+    </div>
+    <div class="step-connector <%= selectedStudent ? 'done' : '' %>"></div>
+    <div class="step-item <%= selectedStudent ? 'active' : '' %>">
+        <span class="step-num">2</span> 选择课程
+    </div>
+</div>
+
+<!-- 步骤1: 选择学生 -->
+<div class="card mb-4">
+    <div class="card-header"><span class="badge bg-primary me-2">第1步</span> 选择学生查询选课状态</div>
+    <div class="card-body">
+        <form method="POST" action="/enroll/lookup" class="row g-2 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label" for="stuSelect">选择学生</label>
+                <select name="stu_id" id="stuSelect" class="form-select" required>
+                    <option value="">— 请选择学生 —</option>
+                    <% students.forEach(function(s) { %>
+                    <option value="<%= s.f_stu_id %>" <%= selectedStudent && selectedStudent.f_stu_id === s.f_stu_id ? 'selected' : '' %>>
+                        <%= s.f_stu_id %> - <%= s.f_name %>
+                    </option>
+                    <% }) %>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> 查询选课信息</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<% if (selectedStudent) { %>
+<!-- 学生信息卡片 -->
+<div class="alert alert-info d-flex align-items-center gap-3" role="status">
+    <div class="sidebar-avatar" style="width:44px;height:44px;font-size:1.1rem;" aria-hidden="true"><%= selectedStudent.f_name.charAt(0) %></div>
+    <div>
+        <strong class="fs-5"><%= selectedStudent.f_name %></strong>
+        <span class="badge bg-secondary ms-2"><%= selectedStudent.f_stu_id %></span>
+        <br>
+        <small>学院：<%= selectedStudent.college_name %> &nbsp;|&nbsp; 专业：<%= selectedStudent.f_speciality || '-' %></small>
+    </div>
+    <div class="ms-auto text-end">
+        <div class="fs-3 fw-bold <%= totalCredit >= 100 ? 'text-danger' : 'text-success' %>"><%= totalCredit %></div>
+        <small class="text-muted">已修学分</small>
+        <% if (totalCredit >= 100) { %>
+        <span class="badge bg-danger d-block mt-1 badge-pulse">已达上限</span>
+        <% } else { %>
+        <span class="badge bg-success d-block mt-1">可继续选课</span>
+        <% } %>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 已选课程 -->
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header"><i class="bi bi-check2-square"></i> 已选课程</div>
+            <div class="table-responsive">
+                <table class="table table-sm mb-0" aria-label="已选课程列表">
+                    <thead><tr><th>课程</th><th>学分</th><th>成绩</th><th style="width:60px"></th></tr></thead>
+                    <tbody>
+                        <% if (enrolledCourses.length === 0) { %>
+                        <tr><td colspan="4"><div class="empty-state py-4"><i class="bi bi-journal-x"></i><p class="mb-0 mt-1">暂无选课</p></div></td></tr>
+                        <% } %>
+                        <% enrolledCourses.forEach(function(c) { %>
+                        <tr>
+                            <td><strong><%= c.course_name %></strong></td>
+                            <td><span class="badge bg-soft-warning text-warning"><%= c.f_credit %> 学分</span></td>
+                            <td>
+                                <% if (c.f_score !== null) { %>
+                                    <span class="text-success fw-bold"><%= c.f_score %></span>
+                                <% } else { %>
+                                    <span class="badge bg-soft-primary text-primary">修读中</span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <form method="POST" action="/enroll/drop" style="display:inline" onsubmit="return confirm('确认退选课程「<%= c.course_name %>」吗？此操作不可撤销。')">
+                                    <input type="hidden" name="stu_id" value="<%= selectedStudent.f_stu_id %>">
+                                    <input type="hidden" name="course_id" value="<%= c.f_course_id %>">
+                                    <input type="hidden" name="teach_id" value="<%= c.f_teach_id %>">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="退课" aria-label="退选<%= c.course_name %>">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                    <tfoot class="table-secondary fw-bold">
+                        <tr><td colspan="2" class="text-end">累计学分</td><td><span class="fs-5"><%= totalCredit %></span></td></tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 选课表单 -->
+    <div class="col-md-6">
+        <div class="card mb-4 border-success">
+            <div class="card-header bg-success text-white"><span class="badge bg-white text-success me-2">第2步</span> 选择课程进行选课</div>
+            <div class="card-body">
+                <form method="POST" action="/enroll/add" class="row g-3">
+                    <input type="hidden" name="stu_id" value="<%= selectedStudent.f_stu_id %>">
+                    <div class="col-md-6">
+                        <label class="form-label required" for="courseSelect">课程</label>
+                        <select name="course_id" id="courseSelect" class="form-select" required>
+                            <option value="">选择课程</option>
+                            <% teachCourses.forEach(function(tc) { %>
+                            <option value="<%= tc.f_course_id %>"><%= tc.course_name %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label required" for="teacherSelect">授课教师</label>
+                        <select name="teach_id" id="teacherSelect" class="form-select" required>
+                            <option value="">选择教师</option>
+                            <% teachCourses.forEach(function(tc) { %>
+                            <option value="<%= tc.f_teach_id %>"><%= tc.teacher_name %></option>
+                            <% }) %>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-success w-100" <%= totalCredit >= 100 ? 'disabled' : '' %>>
+                            <i class="bi bi-plus-circle"></i> 确认选课
+                        </button>
+                        <% if (totalCredit >= 100) { %>
+                        <small class="text-danger d-block mt-2 text-center"><i class="bi bi-exclamation-triangle"></i> 学分已达上限，无法继续选课</small>
+                        <% } else { %>
+                        <small class="text-muted d-block mt-2 text-center">选课后总学分≥100时，触发器会自动拦截并报错</small>
+                        <% } %>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<% } %>
+
+<%- include('footer') %>

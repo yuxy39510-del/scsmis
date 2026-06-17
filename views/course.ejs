@@ -1,0 +1,85 @@
+<%- include('header', { title: '课程管理' }) %>
+
+<div class="page-header">
+    <h4><i class="bi bi-book"></i> 课程管理</h4>
+    <p>管理课程信息，设置先修课程和学分</p>
+</div>
+
+<% if (typeof msg !== 'undefined' && msg) { %>
+<div class="alert alert-danger" role="alert"><i class="bi bi-exclamation-triangle"></i> <%= msg %></div>
+<% } %>
+
+<div class="card add-card mb-4">
+    <div class="card-header"><i class="bi bi-plus-circle"></i> <span id="formTitle">添加课程</span></div>
+    <div class="card-body">
+        <form method="POST" action="/course/add" class="row g-2 align-items-end" data-original-action="/course/add" data-original-btn='<i class="bi bi-check-lg"></i> 添加' data-editing="0">
+            <div class="col-md-1"><label class="form-label required">编号</label><input name="f_course_id" type="number" class="form-control" placeholder="编号" required></div>
+            <div class="col-md-3"><label class="form-label required">课程名称</label><input name="f_name" class="form-control" placeholder="课程名称" required></div>
+            <div class="col-md-2"><label class="form-label">先修课程</label>
+                <select name="f_pre_course" class="form-select">
+                    <option value="">无先修课程</option>
+                    <% allCourses.forEach(c => { %><option value="<%= c.f_course_id %>"><%= c.f_name %></option><% }) %>
+                </select>
+            </div>
+            <div class="col-md-2"><label class="form-label required">学分</label><input name="f_credit" type="number" step="0.1" min="0" max="10" class="form-control" placeholder="学分数" required></div>
+            <div class="col-md-3"><label class="form-label">备注</label><input name="f_memo" class="form-control" placeholder="备注信息"></div>
+            <div class="col-md-1"><button type="submit" class="btn btn-primary w-100"><i class="bi bi-check-lg"></i> 添加</button></div>
+        </form>
+    </div>
+</div>
+
+<div class="table-container">
+    <div class="table-toolbar">
+        <form method="GET" action="/course" class="search-box">
+            <i class="bi bi-search"></i>
+            <input name="q" value="<%= typeof q !== 'undefined' && q ? q : '' %>" type="search" class="form-control" placeholder="搜索课程（全库）..." aria-label="搜索课程">
+        </form>
+        <span class="toolbar-info">共 <%= courses.length %> 条记录</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table" aria-label="课程列表">
+            <thead><tr><th>编号</th><th>名称</th><th>先修课程</th><th>学分</th><th>备注</th><th style="width:130px">操作</th></tr></thead>
+            <tbody>
+                <% if (courses.length === 0) { %>
+                <tr><td colspan="6"><div class="empty-state"><i class="bi bi-inbox"></i><p>还没有课程信息</p></div></td></tr>
+                <% } %>
+                <% courses.forEach(c => { %>
+                <tr>
+                    <td><span class="badge bg-danger"><%= c.f_course_id %></span></td>
+                    <td><strong><%= c.f_name %></strong></td>
+                    <td><%= c.pre_name %><%- c.pre_name ? '' : '<span class="empty-value">&ndash;</span>' %></td>
+                    <td><span class="badge bg-soft-warning text-warning fw-bold"><%= c.f_credit %> 学分</span></td>
+                    <td><%= c.f_memo %><%- c.f_memo ? '' : '<span class="empty-value">&ndash;</span>' %></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" title="编辑"
+                            onclick="enableEdit(this,'course','<%= c.f_course_id %>',[
+                                {name:'f_name',value:'<%= c.f_name.replace(/'/g, "\\'") %>'},
+                                {name:'f_pre_course',value:'<%= c.f_pre_course || '' %>'},
+                                {name:'f_credit',value:'<%= c.f_credit %>'},
+                                {name:'f_memo',value:'<%= (c.f_memo||'').replace(/'/g, "\\'") %>'}
+                            ]); document.getElementById('formTitle').textContent='编辑课程：<%= c.f_name %>'">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <form method="POST" action="/course/delete/<%= c.f_course_id %>" style="display:inline" onsubmit="return confirmDelete(event, '<%= c.f_name %>')">
+                            <button class="btn btn-sm btn-outline-danger" title="删除"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+    <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+    <nav class="d-flex justify-content-center mt-3">
+        <ul class="pagination pagination-sm">
+            <li class="page-item <%= page <= 1 ? 'disabled' : '' %>"><a class="page-link" href="?page=<%= page-1 %><%= q ? '&q=' + encodeURIComponent(q) : '' %>">&laquo;</a></li>
+            <% for (let i = 1; i <= totalPages; i++) { %>
+            <li class="page-item <%= i === page ? 'active' : '' %>"><a class="page-link" href="?page=<%= i %><%= q ? '&q=' + encodeURIComponent(q) : '' %>"><%= i %></a></li>
+            <% } %>
+            <li class="page-item <%= page >= totalPages ? 'disabled' : '' %>"><a class="page-link" href="?page=<%= page+1 %><%= q ? '&q=' + encodeURIComponent(q) : '' %>">&raquo;</a></li>
+        </ul>
+    </nav>
+    <% } %>
+</div>
+
+<%- include('footer') %>

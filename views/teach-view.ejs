@@ -1,0 +1,85 @@
+<%- include('header', { title: '教师授课视图' }) %>
+
+<div class="page-header">
+    <h4><i class="bi bi-easel"></i> 教师授课视图</h4>
+    <p>此视图展示教师、课程、授课时间地点的关联信息 — 对应数据库视图 <span class="badge bg-info">v_teacher_course</span></p>
+</div>
+
+<% if (typeof cancelResult !== 'undefined' && cancelResult) { %>
+<div class="alert alert-<%= cancelResult.code === 0 ? 'success' : 'warning' %> d-flex align-items-center gap-2" role="alert">
+    <i class="bi <%= cancelResult.code === 0 ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill' %> fs-5 flex-shrink-0"></i>
+    <div>
+        <strong>停开课程结果（返回码 <%= cancelResult.code %>）</strong><br>
+        <%= cancelResult.msg %>
+    </div>
+</div>
+<% } %>
+
+<% if (user.role_type !== 'student') { %>
+<!-- 停开课程操作 -->
+<div class="card mb-4 border-danger">
+    <div class="card-header bg-danger text-white">
+        <i class="bi bi-x-circle"></i> 停开课程操作
+        <span class="badge bg-white text-danger ms-2">存储过程 sp_cancel_course</span>
+    </div>
+    <div class="card-body">
+        <form method="POST" action="/cancel-course" class="row g-2 align-items-end" onsubmit="return confirm('确认停开此课程？此操作可能影响选课学生。')">
+            <div class="col-md-3">
+                <label class="form-label required" for="teachIdInput">教师工号</label>
+                <input name="teach_id" id="teachIdInput" class="form-control" placeholder="如 T0001" required>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label required" for="courseIdInput">课程编号</label>
+                <input name="course_id" id="courseIdInput" type="number" class="form-control" placeholder="课程编号" required>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-danger"><i class="bi bi-x-circle"></i> 执行停开</button>
+            </div>
+            <div class="col-md-5">
+                <small class="text-muted">
+                    <i class="bi bi-info-circle"></i> 返回码说明：
+                    <span class="text-success fw-bold">0=成功</span> &nbsp;
+                    <span class="text-warning fw-bold">1=已考试无法停开</span> &nbsp;
+                    <span class="text-danger fw-bold">2=人数≥20</span>
+                </small>
+            </div>
+        </form>
+    </div>
+</div>
+<% } %>
+
+<div class="table-container">
+    <div class="table-toolbar">
+        <div class="search-box">
+            <i class="bi bi-search"></i>
+            <input id="searchTeach" type="text" class="form-control" placeholder="搜索授课记录..." aria-label="搜索授课记录">
+        </div>
+        <span class="toolbar-info" id="searchTeach-count">共 <%= courses.length %> 条记录</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table" aria-label="教师授课视图">
+            <thead>
+                <tr><th>课程编号</th><th>课程名称</th><th>教师工号</th><th>教师姓名</th><th>职称</th><th>授课时间</th><th>授课地点</th></tr>
+            </thead>
+            <tbody>
+                <% if (courses.length === 0) { %>
+                <tr><td colspan="7"><div class="empty-state"><i class="bi bi-inbox"></i><p>暂无授课记录<br>待教师安排课程后，数据将在此处展示</p></div></td></tr>
+                <% } %>
+                <% courses.forEach(r => { %>
+                <tr>
+                    <td><span class="badge bg-danger"><%= r['课程编号'] %></span></td>
+                    <td><strong><%= r['课程名称'] %></strong></td>
+                    <td><span class="badge bg-info"><%= r['教师工号'] %></span></td>
+                    <td><%= r['教师姓名'] %></td>
+                    <td><span class="badge bg-soft-primary text-primary"><%= r['职称'] %></span></td>
+                    <td><%= r['授课时间'] %></td>
+                    <td><%= r['授课地点'] %></td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>initTableSearch('searchTeach', '.table-container');</script>
+<%- include('footer') %>

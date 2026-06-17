@@ -1,0 +1,38 @@
+# Node dependencies
+node_modules/
+
+# 敏感配置 — 绝不提交！
+.env
+.env.local
+.env.*.local
+
+# 二进制/工具
+ngrok.exe
+*.exe
+
+# 实训报告（非代码）
+report_tmp/
+
+# 临时打包脚本
+pack-v2.js
+pack-v3.js
+create_log.js
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 日志
+npm-debug.log*
+*.log
+
+# 运行时
+dist/
+.cache/

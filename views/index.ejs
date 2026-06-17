@@ -1,0 +1,196 @@
+<%- include('header', { title: '首页' }) %>
+
+<div class="page-header">
+    <h4><i class="bi bi-speedometer2"></i> 系统仪表盘</h4>
+    <p>欢迎回来，<strong><%= user.name %></strong>！以下是系统数据概览</p>
+</div>
+
+<% if (typeof error !== 'undefined' && error) { %>
+<div class="alert alert-warning" role="alert"><i class="bi bi-exclamation-triangle"></i> <%= error %></div>
+<% } %>
+
+<!-- 统计卡片 -->
+<div class="row g-3 mb-4 fade-in-stagger">
+    <% if (user.role_type === 'admin') { %>
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <a href="/admin" class="card stat-card primary text-decoration-none">
+            <div class="card-body"><div class="d-flex justify-content-between align-items-start"><div><div class="stat-label">管理员</div><div class="stat-value"><%= stats.t_admin || 0 %></div></div><i class="bi bi-person-badge stat-icon"></i></div></div>
+        </a>
+    </div>
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <a href="/college" class="card stat-card success text-decoration-none">
+            <div class="card-body"><div class="d-flex justify-content-between align-items-start"><div><div class="stat-label">学院</div><div class="stat-value"><%= stats.t_college || 0 %></div></div><i class="bi bi-building stat-icon"></i></div></div>
+        </a>
+    </div>
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <a href="/teacher" class="card stat-card warning text-decoration-none">
+            <div class="card-body"><div class="d-flex justify-content-between align-items-start"><div><div class="stat-label">教师</div><div class="stat-value"><%= stats.t_teacher || 0 %></div></div><i class="bi bi-person-workspace stat-icon"></i></div></div>
+        </a>
+    </div>
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <a href="/student" class="card stat-card info text-decoration-none">
+            <div class="card-body"><div class="d-flex justify-content-between align-items-start"><div><div class="stat-label">学生</div><div class="stat-value"><%= stats.t_student || 0 %></div></div><i class="bi bi-people stat-icon"></i></div></div>
+        </a>
+    </div>
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <a href="/course" class="card stat-card danger text-decoration-none">
+            <div class="card-body"><div class="d-flex justify-content-between align-items-start"><div><div class="stat-label">课程</div><div class="stat-value"><%= stats.t_course || 0 %></div></div><i class="bi bi-book stat-icon"></i></div></div>
+        </a>
+    </div>
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <a href="/teach-view" class="card stat-card dark text-decoration-none">
+            <div class="card-body"><div class="d-flex justify-content-between align-items-start"><div><div class="stat-label">授课记录</div><div class="stat-value"><%= stats.t_teach_course || 0 %></div></div><i class="bi bi-calendar-check stat-icon"></i></div></div>
+        </a>
+    </div>
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <a href="/enroll-view" class="card stat-card purple text-decoration-none">
+            <div class="card-body"><div class="d-flex justify-content-between align-items-start"><div><div class="stat-label">选课记录</div><div class="stat-value"><%= stats.t_stu_course || 0 %></div></div><i class="bi bi-journal-check stat-icon"></i></div></div>
+        </a>
+    </div>
+    <% } else if (user.role_type === 'teacher') { %>
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <a href="/teach-view" class="card stat-card primary text-decoration-none">
+            <div class="card-body"><div class="d-flex justify-content-between align-items-start"><div><div class="stat-label">我的授课</div><div class="stat-value"><%= stats.t_teach_course || 0 %></div></div><i class="bi bi-calendar-check stat-icon"></i></div></div>
+        </a>
+    </div>
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <a href="/enroll-view" class="card stat-card warning text-decoration-none">
+            <div class="card-body"><div class="d-flex justify-content-between align-items-start"><div><div class="stat-label">选课学生</div><div class="stat-value"><%= stats.t_stu_course || 0 %></div></div><i class="bi bi-people stat-icon"></i></div></div>
+        </a>
+    </div>
+    <% } else { %>
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <a href="/enroll-view" class="card stat-card primary text-decoration-none">
+            <div class="card-body"><div class="d-flex justify-content-between align-items-start"><div><div class="stat-label">已选课程</div><div class="stat-value"><%= stats.t_stu_course || 0 %></div></div><i class="bi bi-journal-check stat-icon"></i></div></div>
+        </a>
+    </div>
+    <div class="col-xl-3 col-lg-4 col-md-6">
+        <div class="card stat-card success">
+            <div class="card-body"><div class="d-flex justify-content-between align-items-start"><div><div class="stat-label">已修学分</div><div class="stat-value"><%= stats.credit || 0 %></div></div><i class="bi bi-graph-up stat-icon"></i></div></div>
+        </div>
+    </div>
+    <% } %>
+</div>
+
+<% if (typeof chartData !== 'undefined' && chartData !== null) { %>
+<!-- 图表区域 -->
+<div class="row g-3 mb-4">
+    <% if (user.role_type === 'admin') { %>
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-bar-chart-fill text-primary"></i> 各学院学生人数</div>
+            <div class="card-body"><canvas id="collegeChart" height="280"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-trophy-fill text-warning"></i> 热门课程 Top 10</div>
+            <div class="card-body"><canvas id="courseChart" height="280"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-pie-chart-fill text-info"></i> 人员角色分布</div>
+            <div class="card-body d-flex justify-content-center"><canvas id="rolePie" height="260" style="max-width:300px"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-8">
+        <div class="card h-100">
+            <div class="card-header"><i class="bi bi-star-fill text-warning"></i> 快捷入口</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-sm-6 col-lg-4"><a href="/teach-view" class="feature-card d-block p-3 rounded border text-decoration-none"><span class="feat-icon text-info"><i class="bi bi-easel"></i></span><h6 class="fw-bold mt-2">教师授课视图</h6><small class="text-muted">查看教师开课与停开</small></a></div>
+                    <div class="col-sm-6 col-lg-4"><a href="/enroll-view" class="feature-card d-block p-3 rounded border text-decoration-none"><span class="feat-icon text-success"><i class="bi bi-card-list"></i></span><h6 class="fw-bold mt-2">学生选课视图</h6><small class="text-muted">查看全部选课记录</small></a></div>
+                    <div class="col-sm-6 col-lg-4"><a href="/enroll" class="feature-card d-block p-3 rounded border text-decoration-none"><span class="feat-icon text-warning"><i class="bi bi-pencil-square"></i></span><h6 class="fw-bold mt-2">学生选课操作</h6><small class="text-muted">为学生添加/退选课程</small></a></div>
+                    <div class="col-sm-6 col-lg-4"><a href="/grade-entry" class="feature-card d-block p-3 rounded border text-decoration-none"><span class="feat-icon text-danger"><i class="bi bi-journal-check"></i></span><h6 class="fw-bold mt-2">录入成绩</h6><small class="text-muted">教师成绩录入入口</small></a></div>
+                    <div class="col-sm-6 col-lg-4"><a href="/audit-log" class="feature-card d-block p-3 rounded border text-decoration-none"><span class="feat-icon text-secondary"><i class="bi bi-shield-check"></i></span><h6 class="fw-bold mt-2">操作日志</h6><small class="text-muted">安全审计追溯</small></a></div>
+                    <div class="col-sm-6 col-lg-4"><a href="/open-course" class="feature-card d-block p-3 rounded border text-decoration-none"><span class="feat-icon text-primary"><i class="bi bi-plus-circle-dotted"></i></span><h6 class="fw-bold mt-2">开设课程</h6><small class="text-muted">为教师分配新课程</small></a></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <% } else if (user.role_type === 'teacher') { %>
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-bar-chart-fill text-primary"></i> 所授课程选课人数</div>
+            <div class="card-body"><canvas id="teacherChart" height="280"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card h-100">
+            <div class="card-header"><i class="bi bi-star-fill text-warning"></i> 快捷入口</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-12"><a href="/grade-entry" class="feature-card d-block p-3 rounded border text-decoration-none"><span class="feat-icon text-danger"><i class="bi bi-journal-check"></i></span><h6 class="fw-bold mt-2">录入成绩</h6><small class="text-muted">管理学生考试成绩</small></a></div>
+                    <div class="col-12"><a href="/open-course" class="feature-card d-block p-3 rounded border text-decoration-none"><span class="feat-icon text-primary"><i class="bi bi-plus-circle-dotted"></i></span><h6 class="fw-bold mt-2">开设课程</h6><small class="text-muted">申请开设新课程</small></a></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <% } else { %>
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-pie-chart-fill text-info"></i> 成绩分布</div>
+            <div class="card-body d-flex justify-content-center"><canvas id="scoreDist" height="260" style="max-width:350px"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card h-100">
+            <div class="card-header"><i class="bi bi-star-fill text-warning"></i> 快捷入口</div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-12"><a href="/my-grades" class="feature-card d-block p-3 rounded border text-decoration-none"><span class="feat-icon text-success"><i class="bi bi-trophy"></i></span><h6 class="fw-bold mt-2">我的成绩单</h6><small class="text-muted">查看GPA和各科成绩</small></a></div>
+                    <div class="col-12"><a href="/enroll" class="feature-card d-block p-3 rounded border text-decoration-none"><span class="feat-icon text-warning"><i class="bi bi-pencil-square"></i></span><h6 class="fw-bold mt-2">选课操作</h6><small class="text-muted">查看可选课程并选课</small></a></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <% } %>
+</div>
+
+<% if (user.role_type === 'admin') { %>
+<div class="row g-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><i class="bi bi-clipboard-data text-success"></i> 系统数据总览</div>
+            <div class="card-body">
+                <table class="table table-sm mb-0" style="max-width:600px">
+                    <tr><td><i class="bi bi-people-fill text-info"></i> 学生总数</td><td class="fw-bold"><%= stats.t_student || 0 %></td><td><i class="bi bi-person-workspace text-warning"></i> 教师总数</td><td class="fw-bold"><%= stats.t_teacher || 0 %></td></tr>
+                    <tr><td><i class="bi bi-person-badge text-primary"></i> 管理员数</td><td class="fw-bold"><%= stats.t_admin || 0 %></td><td><i class="bi bi-building text-success"></i> 学院数</td><td class="fw-bold"><%= stats.t_college || 0 %></td></tr>
+                    <tr><td><i class="bi bi-book text-danger"></i> 课程总数</td><td class="fw-bold"><%= stats.t_course || 0 %></td><td><i class="bi bi-calendar-check text-dark"></i> 授课记录</td><td class="fw-bold"><%= stats.t_teach_course || 0 %></td></tr>
+                    <tr><td><i class="bi bi-journal-check text-purple"></i> 选课记录</td><td class="fw-bold"><%= stats.t_stu_course || 0 %></td><td></td><td></td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<% } %>
+<% } %>
+
+<script src="/chart.js/chart.umd.js"></script>
+<script>
+(function() {
+<% if (typeof chartData !== 'undefined' && chartData !== null) { %>
+<%   if (user.role_type === 'admin') { %>
+    var ctx, data;
+    // 各学院学生人数
+    ctx = document.getElementById('collegeChart');
+    if (ctx) { new Chart(ctx, {type:'bar', data:{labels:<%- JSON.stringify(chartData.collegeStats.map(function(d){return d.label})) %>, datasets:[{label:'学生人数', data:<%- JSON.stringify(chartData.collegeStats.map(function(d){return Number(d.cnt)})) %>, backgroundColor:['#6366f1','#10b981','#f59e0b','#06b6d4','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316','#64748b'], borderRadius:6, borderSkipped:false}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1},grid:{color:'#f1f5f9'}},x:{grid:{display:false}}}}}); }
+    // 热门课程
+    ctx = document.getElementById('courseChart');
+    if (ctx) { new Chart(ctx, {type:'bar', data:{labels:<%- JSON.stringify(chartData.courseRank.map(function(d){return d.label})) %>, datasets:[{label:'选课人数', data:<%- JSON.stringify(chartData.courseRank.map(function(d){return Number(d.cnt)})) %>, backgroundColor:'#f59e0b', borderRadius:4, borderSkipped:false}]}, options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{stepSize:1},grid:{color:'#f1f5f9'}},y:{grid:{display:false}}}}}); }
+    // 角色分布
+    ctx = document.getElementById('rolePie');
+    if (ctx) { new Chart(ctx, {type:'doughnut', data:{labels:<%- JSON.stringify(chartData.roleDist.labels) %>, datasets:[{data:<%- JSON.stringify(chartData.roleDist.counts) %>, backgroundColor:['#6366f1','#f59e0b','#10b981'], borderColor:'#fff', borderWidth:2}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}}); }
+<%   } else if (user.role_type === 'teacher') { %>
+    var ctx = document.getElementById('teacherChart');
+    if (ctx) { new Chart(ctx, {type:'bar', data:{labels:<%- JSON.stringify(chartData.tStats.map(function(d){return d.label})) %>, datasets:[{label:'选课人数', data:<%- JSON.stringify(chartData.tStats.map(function(d){return Number(d.cnt)})) %>, backgroundColor:'#6366f1', borderRadius:6, borderSkipped:false}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1},grid:{color:'#f1f5f9'}},x:{grid:{display:false}}}}}); }
+<%   } else if (user.role_type === 'student') { %>
+    var ctx = document.getElementById('scoreDist');
+    if (ctx) { new Chart(ctx, {type:'doughnut', data:{labels:<%- JSON.stringify(chartData.scoreDist.map(function(d){return d.label})) %>, datasets:[{data:<%- JSON.stringify(chartData.scoreDist.map(function(d){return Number(d.cnt)})) %>, backgroundColor:['#10b981','#06b6d4','#f59e0b','#f97316','#ef4444','#94a3b8'], borderColor:'#fff', borderWidth:2}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}}); }
+<%   } %>
+<% } %>
+})();
+</script>
+
+<%- include('footer') %>

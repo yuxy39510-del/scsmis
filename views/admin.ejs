@@ -1,0 +1,86 @@
+<%- include('header', { title: '管理员管理' }) %>
+
+<div class="page-header">
+    <h4><i class="bi bi-person-badge"></i> 管理员管理</h4>
+    <p>管理系统的管理员账户</p>
+</div>
+
+<% if (typeof msg !== 'undefined' && msg) { %>
+<div class="alert alert-danger" role="alert"><i class="bi bi-exclamation-triangle"></i> <%= msg %></div>
+<% } %>
+
+<div class="card add-card mb-4">
+    <div class="card-header"><i class="bi bi-plus-circle"></i> <span id="formTitle">添加管理员</span></div>
+    <div class="card-body">
+        <form method="POST" action="/admin/add" class="row g-2 align-items-end" data-original-action="/admin/add" data-original-btn='<i class="bi bi-check-lg"></i> 添加' data-editing="0">
+            <div class="col-md-2"><label class="form-label required">账号</label><input name="f_user_id" class="form-control" placeholder="账号" required></div>
+            <div class="col-md-2"><label class="form-label required">姓名</label><input name="f_name" class="form-control" placeholder="姓名" required></div>
+            <div class="col-md-1"><label class="form-label">性别</label><select name="f_sex" class="form-select"><option>男</option><option>女</option></select></div>
+            <div class="col-md-2"><label class="form-label">生日</label><input name="f_birth" type="date" class="form-control"></div>
+            <div class="col-md-2"><label class="form-label">部门</label><input name="f_dept" class="form-control" placeholder="部门"></div>
+            <div class="col-md-1"><label class="form-label">电话</label><input name="f_tel" class="form-control" placeholder="电话"></div>
+            <div class="col-md-1"><label class="form-label">备注</label><input name="f_memo" class="form-control" placeholder="备注"></div>
+            <div class="col-md-1"><button type="submit" class="btn btn-primary w-100"><i class="bi bi-check-lg"></i> 添加</button></div>
+        </form>
+    </div>
+</div>
+
+<div class="table-container">
+    <div class="table-toolbar">
+        <form method="GET" action="/admin" class="search-box">
+            <i class="bi bi-search"></i>
+            <input name="q" value="<%= typeof q !== 'undefined' && q ? q : '' %>" type="search" class="form-control" placeholder="搜索管理员（全库）..." aria-label="搜索管理员">
+        </form>
+        <span class="toolbar-info">共 <%= admins.length %> 条记录</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table" aria-label="管理员列表">
+            <thead><tr><th>账号</th><th>姓名</th><th>性别</th><th>生日</th><th>部门</th><th>电话</th><th>备注</th><th style="width:130px">操作</th></tr></thead>
+            <tbody>
+                <% if (admins.length === 0) { %>
+                <tr><td colspan="8"><div class="empty-state"><i class="bi bi-inbox"></i><p>还没有管理员账户</p></div></td></tr>
+                <% } %>
+                <% admins.forEach(a => { %>
+                <tr>
+                    <td><span class="badge bg-dark"><%= a.f_user_id %></span></td>
+                    <td><strong><%= a.f_name %></strong></td>
+                    <td><%= a.f_sex %></td>
+                    <td><%= a.f_birth ? a.f_birth.toISOString().split('T')[0] : '' %><%- a.f_birth ? '' : '<span class="empty-value">&ndash;</span>' %></td>
+                    <td><%= a.f_dept %><%- a.f_dept ? '' : '<span class="empty-value">&ndash;</span>' %></td>
+                    <td><%= a.f_tel %><%- a.f_tel ? '' : '<span class="empty-value">&ndash;</span>' %></td>
+                    <td><%= a.f_memo %><%- a.f_memo ? '' : '<span class="empty-value">&ndash;</span>' %></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" title="编辑"
+                            onclick="enableEdit(this,'admin','<%= a.f_user_id %>',[
+                                {name:'f_name',value:'<%= a.f_name.replace(/'/g, "\\'") %>'},
+                                {name:'f_sex',value:'<%= a.f_sex %>'},
+                                {name:'f_birth',value:'<%= a.f_birth ? a.f_birth.toISOString().split('T')[0] : '' %>'},
+                                {name:'f_dept',value:'<%= (a.f_dept||'').replace(/'/g, "\\'") %>'},
+                                {name:'f_tel',value:'<%= (a.f_tel||'').replace(/'/g, "\\'") %>'},
+                                {name:'f_memo',value:'<%= (a.f_memo||'').replace(/'/g, "\\'") %>'}
+                            ]); document.getElementById('formTitle').textContent='编辑管理员：<%= a.f_user_id %>'">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <form method="POST" action="/admin/delete/<%= a.f_user_id %>" style="display:inline" onsubmit="return confirmDelete(event, '<%= a.f_name %>')">
+                            <button class="btn btn-sm btn-outline-danger" title="删除"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+    <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+    <nav class="d-flex justify-content-center mt-3">
+        <ul class="pagination pagination-sm">
+            <li class="page-item <%= page <= 1 ? 'disabled' : '' %>"><a class="page-link" href="?page=<%= page-1 %><%= q ? '&q=' + encodeURIComponent(q) : '' %>">&laquo;</a></li>
+            <% for (let i = 1; i <= totalPages; i++) { %>
+            <li class="page-item <%= i === page ? 'active' : '' %>"><a class="page-link" href="?page=<%= i %><%= q ? '&q=' + encodeURIComponent(q) : '' %>"><%= i %></a></li>
+            <% } %>
+            <li class="page-item <%= page >= totalPages ? 'disabled' : '' %>"><a class="page-link" href="?page=<%= page+1 %><%= q ? '&q=' + encodeURIComponent(q) : '' %>">&raquo;</a></li>
+        </ul>
+    </nav>
+    <% } %>
+</div>
+
+<%- include('footer') %>

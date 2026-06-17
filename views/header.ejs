@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title + ' - 学生选课管理系统' : '学生选课管理系统' %></title>
+    <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 跳过导航链接（无障碍） -->
+    <a href="#main-content" class="visually-hidden-focusable bg-primary text-white px-3 py-2 position-absolute" style="z-index:9999;top:4px;left:4px;border-radius:6px;">跳到主内容</a>
+
+    <!-- 顶部栏 -->
+    <header class="topbar" role="banner">
+        <button class="menu-toggle" onclick="toggleSidebar()" aria-label="打开菜单" aria-expanded="false" id="menuToggle">
+            <i class="bi bi-list"></i>
+        </button>
+        <div class="topbar-brand">
+            <i class="bi bi-mortarboard-fill"></i> 学生选课管理系统
+        </div>
+        <div class="topbar-actions">
+            <span class="badge bg-soft-primary text-primary" aria-label="当前角色">
+                <% if (user.role_type === 'admin') { %><i class="bi bi-shield-check"></i> 管理员<% } %>
+                <% if (user.role_type === 'teacher') { %><i class="bi bi-person-workspace"></i> 教师<% } %>
+                <% if (user.role_type === 'student') { %><i class="bi bi-person"></i> 学生<% } %>
+            </span>
+            <span class="text-dark fw-semibold small d-none d-md-inline"><%= user.name %></span>
+            <a href="/logout" class="btn btn-sm btn-outline-secondary" title="退出登录" aria-label="退出登录">
+                <i class="bi bi-box-arrow-right"></i>
+            </a>
+        </div>
+    </header>
+
+    <!-- 侧边栏遮罩（移动端） -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()" aria-hidden="true"></div>
+
+    <div class="app-layout">
+        <!-- 侧边栏 -->
+        <aside class="sidebar" id="sidebar" role="navigation" aria-label="主导航">
+            <div class="sidebar-brand">
+                <i class="bi bi-mortarboard-fill"></i> SCSMIS
+            </div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-section">主菜单</div>
+                <a href="/" class="sidebar-link<%= typeof title !== 'undefined' && title === '首页' ? ' active' : '' %>" <%= typeof title !== 'undefined' && title === '首页' ? 'aria-current="page"' : '' %>>
+                    <i class="bi bi-speedometer2"></i> 仪表盘
+                </a>
+
+                <% if (user.role_type === 'admin') { %>
+                <div class="sidebar-section">数据管理</div>
+                <a href="/college" class="sidebar-link<%= typeof title !== 'undefined' && title === '学院管理' ? ' active' : '' %>" <%= typeof title !== 'undefined' && title === '学院管理' ? 'aria-current="page"' : '' %>>
+                    <i class="bi bi-building"></i> 学院管理
+                </a>
+                <a href="/admin" class="sidebar-link<%= typeof title !== 'undefined' && title === '管理员管理' ? ' active' : '' %>" <%= typeof title !== 'undefined' && title === '管理员管理' ? 'aria-current="page"' : '' %>>
+                    <i class="bi bi-person-badge"></i> 管理员管理
+                </a>
+                <a href="/teacher" class="sidebar-link<%= typeof title !== 'undefined' && title === '教师管理' ? ' active' : '' %>" <%= typeof title !== 'undefined' && title === '教师管理' ? 'aria-current="page"' : '' %>>
+                    <i class="bi bi-person-workspace"></i> 教师管理
+                </a>
+                <a href="/student" class="sidebar-link<%= typeof title !== 'undefined' && title === '学生管理' ? ' active' : '' %>" <%= typeof title !== 'undefined' && title === '学生管理' ? 'aria-current="page"' : '' %>>
+                    <i class="bi bi-people"></i> 学生管理
+                </a>
+                <a href="/course" class="sidebar-link<%= typeof title !== 'undefined' && title === '课程管理' ? ' active' : '' %>" <%= typeof title !== 'undefined' && title === '课程管理' ? 'aria-current="page"' : '' %>>
+                    <i class="bi bi-book"></i> 课程管理
+                </a>
+                <div class="sidebar-section">系统管理</div>
+                <a href="/audit-log" class="sidebar-link<%= typeof title !== 'undefined' && title === '操作日志' ? ' active' : '' %>" <%= typeof title !== 'undefined' && title === '操作日志' ? 'aria-current="page"' : '' %>>
+                    <i class="bi bi-shield-check"></i> 操作日志
+                </a>
+                <% } %>
+
+                <div class="sidebar-section">业务操作</div>
+                <a href="/teach-view" class="sidebar-link<%= typeof title !== 'undefined' && title === '教师授课视图' ? ' active' : '' %>" <%= typeof title !== 'undefined' && title === '教师授课视图' ? 'aria-current="page"' : '' %>>
+                    <i class="bi bi-easel"></i> 授课视图
+                </a>
+                <% if (user.role_type === 'teacher' || user.role_type === 'admin') { %>
+                <a href="/open-course" class="sidebar-link<%= typeof title !== 'undefined' && title === '开设课程' ? ' active' : '' %>" <%= typeof title !== 'undefined' && title === '开设课程' ? 'aria-current="page"' : '' %>>
+                    <i class="bi bi-plus-circle-dotted"></i> 开设课程
+                </a>
+                <% } %>
+                <a href="/enroll-view" class="sidebar-link<%= typeof title !== 'undefined' && title === '学生选课视图' ? ' active' : '' %>" <%= typeof title !== 'undefined' && title === '学生选课视图' ? 'aria-current="page"' : '' %>>
+                    <i class="bi bi-card-list"></i> 选课视图
+                </a>
+                <% if (user.role_type !== 'teacher') { %>
+                <a href="/enroll" class="sidebar-link<%= typeof title !== 'undefined' && title === '学生选课操作' ? ' active' : '' %>" <%= typeof title !== 'undefined' && title === '学生选课操作' ? 'aria-current="page"' : '' %>>
+                    <i class="bi bi-pencil-square"></i> 学生选课
+                </a>
+                <% } %>
+                <% if (user.role_type === 'teacher' || user.role_type === 'admin') { %>
+                <a href="/grade-entry" class="sidebar-link<%= typeof title !== 'undefined' && title === '录成绩' ? ' active' : '' %>" <%= typeof title !== 'undefined' && title === '录成绩' ? 'aria-current="page"' : '' %>>
+                    <i class="bi bi-journal-check"></i> 录入成绩
+                </a>
+                <% } %>
+                <div class="sidebar-section">账户</div>
+                <% if (user.role_type === 'student') { %>
+                <a href="/my-grades" class="sidebar-link<%= typeof title !== 'undefined' && title === '我的成绩单' ? ' active' : '' %>" <%= typeof title !== 'undefined' && title === '我的成绩单' ? 'aria-current="page"' : '' %>>
+                    <i class="bi bi-trophy"></i> 我的成绩单
+                </a>
+                <% } %>
+                <a href="/change-password" class="sidebar-link<%= typeof title !== 'undefined' && title === '修改密码' ? ' active' : '' %>" <%= typeof title !== 'undefined' && title === '修改密码' ? 'aria-current="page"' : '' %>>
+                    <i class="bi bi-key"></i> 修改密码
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-avatar" aria-hidden="true"><%= user.name.charAt(0) %></div>
+                <div class="sidebar-user-info">
+                    <div class="name"><%= user.name %></div>
+                    <div class="role"><% if (typeof user.role_name !== 'undefined' && user.role_name) { %><%= user.role_name %><% } else { %><%= user.role_type %><% } %></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content fade-in" id="main-content">

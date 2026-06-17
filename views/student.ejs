@@ -1,0 +1,93 @@
+<%- include('header', { title: '学生管理' }) %>
+
+<div class="page-header">
+    <h4><i class="bi bi-people"></i> 学生管理</h4>
+    <p>管理学生信息，关联所属学院和专业</p>
+</div>
+
+<% if (typeof msg !== 'undefined' && msg) { %>
+<div class="alert alert-danger" role="alert"><i class="bi bi-exclamation-triangle"></i> <%= msg %></div>
+<% } %>
+
+<div class="card add-card mb-4">
+    <div class="card-header"><i class="bi bi-plus-circle"></i> <span id="formTitle">添加学生</span></div>
+    <div class="card-body">
+        <form method="POST" action="/student/add" class="row g-2 align-items-end" data-original-action="/student/add" data-original-btn='<i class="bi bi-check-lg"></i> 添加' data-editing="0">
+            <div class="col-md-2"><label class="form-label required">学号</label><input name="f_stu_id" class="form-control" placeholder="学号" required></div>
+            <div class="col-md-2"><label class="form-label required">姓名</label><input name="f_name" class="form-control" placeholder="姓名" required></div>
+            <div class="col-md-1"><label class="form-label">性别</label><select name="f_sex" class="form-select"><option>男</option><option>女</option></select></div>
+            <div class="col-md-1"><label class="form-label">生日</label><input name="f_birth" type="date" class="form-control"></div>
+            <div class="col-md-1"><label class="form-label">入学年</label><input name="f_enroll_year" class="form-control" placeholder="如2024"></div>
+            <div class="col-md-2"><label class="form-label required">学院</label>
+                <select name="f_college_id" class="form-select">
+                    <% colleges.forEach(c => { %><option value="<%= c.f_college_id %>"><%= c.f_name %></option><% }) %>
+                </select>
+            </div>
+            <div class="col-md-1"><label class="form-label">专业</label><input name="f_speciality" class="form-control" placeholder="专业"></div>
+            <div class="col-md-1"><label class="form-label">电话</label><input name="f_tel" class="form-control" placeholder="电话"></div>
+            <div class="col-md-1"><button type="submit" class="btn btn-primary w-100"><i class="bi bi-check-lg"></i> 添加</button></div>
+        </form>
+    </div>
+</div>
+
+<div class="table-container">
+    <div class="table-toolbar">
+        <form method="GET" action="/student" class="search-box">
+            <i class="bi bi-search"></i>
+            <input name="q" value="<%= typeof q !== 'undefined' && q ? q : '' %>" type="search" class="form-control" placeholder="搜索学生（全库）..." aria-label="搜索学生">
+        </form>
+        <span class="toolbar-info">共 <%= students.length %> 条记录</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table" aria-label="学生列表">
+            <thead><tr><th>学号</th><th>姓名</th><th>性别</th><th>生日</th><th>入学年</th><th>学院</th><th>专业</th><th>电话</th><th style="width:130px">操作</th></tr></thead>
+            <tbody>
+                <% if (students.length === 0) { %>
+                <tr><td colspan="9"><div class="empty-state"><i class="bi bi-inbox"></i><p>还没有学生信息</p></div></td></tr>
+                <% } %>
+                <% students.forEach(s => { %>
+                <tr>
+                    <td><span class="badge bg-success"><%= s.f_stu_id %></span></td>
+                    <td><strong><%= s.f_name %></strong></td>
+                    <td><%= s.f_sex %></td>
+                    <td><%= s.f_birth ? s.f_birth.toISOString().split('T')[0] : '' %><%- s.f_birth ? '' : '<span class="empty-value">&ndash;</span>' %></td>
+                    <td><%= s.f_enroll_year %><%- s.f_enroll_year ? '' : '<span class="empty-value">&ndash;</span>' %></td>
+                    <td><%= s.college_name %><%- s.college_name ? '' : '<span class="empty-value">&ndash;</span>' %></td>
+                    <td><%= s.f_speciality %><%- s.f_speciality ? '' : '<span class="empty-value">&ndash;</span>' %></td>
+                    <td><%= s.f_tel %><%- s.f_tel ? '' : '<span class="empty-value">&ndash;</span>' %></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" title="编辑"
+                            onclick="enableEdit(this,'student','<%= s.f_stu_id %>',[
+                                {name:'f_name',value:'<%= s.f_name.replace(/'/g, "\\'") %>'},
+                                {name:'f_sex',value:'<%= s.f_sex %>'},
+                                {name:'f_birth',value:'<%= s.f_birth ? s.f_birth.toISOString().split('T')[0] : '' %>'},
+                                {name:'f_enroll_year',value:'<%= s.f_enroll_year || '' %>'},
+                                {name:'f_college_id',value:'<%= s.f_college_id %>'},
+                                {name:'f_speciality',value:'<%= (s.f_speciality||'').replace(/'/g, "\\'") %>'},
+                                {name:'f_tel',value:'<%= (s.f_tel||'').replace(/'/g, "\\'") %>'}
+                            ]); document.getElementById('formTitle').textContent='编辑学生：<%= s.f_stu_id %>'">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <form method="POST" action="/student/delete/<%= s.f_stu_id %>" style="display:inline" onsubmit="return confirmDelete(event, '<%= s.f_name %>')">
+                            <button class="btn btn-sm btn-outline-danger" title="删除"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+    <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+    <nav class="d-flex justify-content-center mt-3">
+        <ul class="pagination pagination-sm">
+            <li class="page-item <%= page <= 1 ? 'disabled' : '' %>"><a class="page-link" href="?page=<%= page-1 %><%= q ? '&q=' + encodeURIComponent(q) : '' %>">&laquo;</a></li>
+            <% for (let i = 1; i <= totalPages; i++) { %>
+            <li class="page-item <%= i === page ? 'active' : '' %>"><a class="page-link" href="?page=<%= i %><%= q ? '&q=' + encodeURIComponent(q) : '' %>"><%= i %></a></li>
+            <% } %>
+            <li class="page-item <%= page >= totalPages ? 'disabled' : '' %>"><a class="page-link" href="?page=<%= page+1 %><%= q ? '&q=' + encodeURIComponent(q) : '' %>">&raquo;</a></li>
+        </ul>
+    </nav>
+    <% } %>
+</div>
+
+<%- include('footer') %>

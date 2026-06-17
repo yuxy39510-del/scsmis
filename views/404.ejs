@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 页面未找到 - 学生选课管理系统</title>
+    <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="error-page d-flex align-items-center justify-content-center" style="min-height:100vh;background:var(--gray-50)">
+    <div class="text-center fade-in">
+        <div class="mb-4">
+            <i class="bi bi-map" style="font-size:5rem;color:var(--gray-300)"></i>
+        </div>
+        <h1 class="display-3 fw-bold" style="color:var(--gray-300)">404</h1>
+        <h4 class="fw-bold mb-3">页面未找到</h4>
+        <p class="text-muted mb-4">你访问的页面 <code><%= typeof url !== 'undefined' ? url : '' %></code> 不存在或已被移除</p>
+        <div class="d-flex gap-2 justify-content-center">
+            <a href="/" class="btn btn-primary"><i class="bi bi-house"></i> 返回首页</a>
+            <button class="btn btn-outline-secondary" onclick="history.back()"><i class="bi bi-arrow-left"></i> 返回上页</button>
+        </div>
+        <div class="mt-4">
+            <small class="text-muted">学生选课管理系统 SCSMIS</small>
+        </div>
+    </div>
+</div>
+</body>
+</html>

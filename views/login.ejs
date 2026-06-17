@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 学生选课管理系统</title>
+    <link rel="stylesheet" href="/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="login-page">
+    <div class="login-container">
+        <div class="login-card fade-in">
+            <div class="login-logo">
+                <div class="icon-circle">
+                    <i class="bi bi-mortarboard-fill"></i>
+                </div>
+                <h4>学生选课管理系统</h4>
+                <p>Student Course Selection Management System</p>
+            </div>
+
+            <% if (typeof error !== 'undefined' && error) { %>
+            <div class="alert alert-danger d-flex align-items-center gap-2" role="alert">
+                <i class="bi bi-exclamation-triangle-fill flex-shrink-0"></i>
+                <span><%= error %></span>
+            </div>
+            <% } %>
+
+            <form method="POST" action="/login" id="loginForm" onsubmit="handleLogin(event)">
+                <div class="mb-3">
+                    <label class="form-label" for="roleSelect">选择角色</label>
+                    <select name="role" id="roleSelect" class="form-select" required>
+                        <option value="">— 请选择登录身份 —</option>
+                        <option value="admin">👑 管理员</option>
+                        <option value="teacher">👨‍🏫 教师</option>
+                        <option value="student">🎓 学生</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label" for="usernameInput">用户名</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input type="text" name="username" id="usernameInput" class="form-control" placeholder="请输入工号或学号" required autocomplete="username">
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label" for="passwordInput">密码</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                        <input type="password" name="password" id="passwordInput" class="form-control" placeholder="默认密码 123456" required autocomplete="current-password">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mb-3" id="loginBtn">
+                    <i class="bi bi-box-arrow-in-right"></i> 登 录
+                </button>
+            </form>
+
+            <div class="login-test-accounts">
+                <strong><i class="bi bi-key"></i> 测试账号</strong>
+                <div class="account-row" onclick="fillTestAccount('admin', 'admin1')" style="cursor:pointer;" title="点击填入">
+                    <span class="role-tag">管理员</span> admin1 / 123456
+                </div>
+                <div class="account-row" onclick="fillTestAccount('teacher', 'T0001')" style="cursor:pointer;" title="点击填入">
+                    <span class="role-tag">教师</span> T0001 / 123456
+                </div>
+                <div class="account-row" onclick="fillTestAccount('student', '20220101001')" style="cursor:pointer;" title="点击填入">
+                    <span class="role-tag">学生</span> 20220101001 / 123456
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script>
+// 点击测试账号自动填充
+function fillTestAccount(role, username) {
+    document.getElementById('roleSelect').value = role;
+    document.getElementById('usernameInput').value = username;
+    document.getElementById('passwordInput').value = '123456';
+    document.getElementById('usernameInput').focus();
+}
+
+// 登录按钮加载状态
+function handleLogin(e) {
+    const btn = document.getElementById('loginBtn');
+    const originalHTML = btn.innerHTML;
+    btn.classList.add('loading');
+    btn.disabled = true;
+    // 3秒后恢复（防止表单提交失败卡住）
+    setTimeout(() => {
+        if (btn.disabled) {
+            btn.classList.remove('loading');
+            btn.disabled = false;
+        }
+    }, 3000);
+}
+</script>
+</body>
+</html>

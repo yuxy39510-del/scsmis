@@ -1,0 +1,94 @@
+<%- include('header', { title: '学院管理' }) %>
+
+<div class="page-header">
+    <h4><i class="bi bi-building"></i> 学院管理</h4>
+    <p>管理系统中的所有学院信息</p>
+</div>
+
+<% if (typeof msg !== 'undefined' && msg) { %>
+<div class="alert alert-danger" role="alert"><i class="bi bi-exclamation-triangle"></i> <%= msg %></div>
+<% } %>
+
+<div class="card add-card mb-4">
+    <div class="card-header"><i class="bi bi-plus-circle"></i> <span id="formTitle">添加学院</span></div>
+    <div class="card-body">
+        <form method="POST" action="/college/add" class="row g-2 align-items-end" data-original-action="/college/add" data-original-btn='<i class="bi bi-check-lg"></i> 添加' data-editing="0">
+            <div class="col-md-2">
+                <label class="form-label required">学院编号</label>
+                <input name="f_college_id" class="form-control" placeholder="如：01" maxlength="2" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label required">学院名称</label>
+                <input name="f_name" class="form-control" placeholder="请输入学院名称" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">备注</label>
+                <input name="f_memo" class="form-control" placeholder="可选备注信息">
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-check-lg"></i> 添加</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="table-container">
+    <div class="table-toolbar">
+        <form method="GET" action="/college" class="search-box">
+            <i class="bi bi-search"></i>
+            <input name="q" value="<%= typeof q !== 'undefined' && q ? q : '' %>" type="search" class="form-control" placeholder="搜索学院（全库）..." aria-label="搜索学院">
+        </form>
+        <span class="toolbar-info">共 <%= colleges.length %> 条记录</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table" aria-label="学院列表">
+            <thead>
+                <tr><th>编号</th><th>名称</th><th>备注</th><th style="width:130px">操作</th></tr>
+            </thead>
+            <tbody>
+                <% if (colleges.length === 0) { %>
+                <tr><td colspan="4"><div class="empty-state"><i class="bi bi-inbox"></i><p>还没有学院信息<br>请在上方添加第一个学院</p></div></td></tr>
+                <% } %>
+                <% colleges.forEach(c => { %>
+                <tr data-id="<%= c.f_college_id %>">
+                    <td><span class="badge bg-primary"><%= c.f_college_id %></span></td>
+                    <td><strong><%= c.f_name %></strong></td>
+                    <td><%= c.f_memo %><%- c.f_memo ? '' : '<span class="empty-value">&ndash;</span>' %></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary me-1" title="编辑学院"
+                            onclick="enableEdit(this,'college','<%= c.f_college_id %>',[
+                                {name:'f_name',value:'<%= c.f_name.replace(/'/g, "\\'") %>'},
+                                {name:'f_memo',value:'<%= (c.f_memo||'').replace(/'/g, "\\'") %>'}
+                            ]); document.getElementById('formTitle').textContent='编辑学院：<%= c.f_college_id %>'">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <form method="POST" action="/college/delete/<%= c.f_college_id %>" style="display:inline" onsubmit="return confirmDelete(event, '<%= c.f_name %>')">
+                            <button class="btn btn-sm btn-outline-danger" title="删除学院"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+        </table>
+    </div>
+    <!-- 分页 -->
+    <% if (typeof totalPages !== 'undefined' && totalPages > 1) { %>
+    <nav class="d-flex justify-content-center mt-3" aria-label="学院分页">
+        <ul class="pagination pagination-sm">
+            <li class="page-item <%= page <= 1 ? 'disabled' : '' %>">
+                <a class="page-link" href="?page=<%= page-1 %><%= q ? '&q=' + encodeURIComponent(q) : '' %>">&laquo; 上一页</a>
+            </li>
+            <% for (let i = 1; i <= totalPages; i++) { %>
+            <li class="page-item <%= i === page ? 'active' : '' %>">
+                <a class="page-link" href="?page=<%= i %><%= q ? '&q=' + encodeURIComponent(q) : '' %>"><%= i %></a>
+            </li>
+            <% } %>
+            <li class="page-item <%= page >= totalPages ? 'disabled' : '' %>">
+                <a class="page-link" href="?page=<%= page+1 %><%= q ? '&q=' + encodeURIComponent(q) : '' %>">下一页 &raquo;</a>
+            </li>
+        </ul>
+    </nav>
+    <% } %>
+</div>
+
+<%- include('footer') %>

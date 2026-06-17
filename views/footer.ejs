@@ -1,0 +1,180 @@
+        </main>
+    </div><!-- .app-layout -->
+
+    <!-- Toast 通知容器 -->
+    <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="false"></div>
+
+    <!-- 返回顶部按钮 -->
+    <button class="back-to-top" id="backToTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="返回顶部" title="返回顶部">
+        <i class="bi bi-chevron-up"></i>
+    </button>
+
+    <script src="/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script>
+    // ---- 侧边栏切换 ----
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const toggle = document.getElementById('menuToggle');
+        const isOpen = sidebar.classList.toggle('open');
+        overlay.classList.toggle('show');
+
+        // 无障碍状态更新
+        if (toggle) {
+            toggle.setAttribute('aria-expanded', isOpen);
+            toggle.setAttribute('aria-label', isOpen ? '关闭菜单' : '打开菜单');
+        }
+        if (overlay) {
+            overlay.setAttribute('aria-hidden', !isOpen);
+        }
+
+        // 打开侧边栏时禁止body滚动
+        document.body.style.overflow = isOpen ? 'hidden' : '';
+    }
+
+    // 点击侧边栏链接后自动关闭（移动端）
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth <= 992) {
+                toggleSidebar();
+            }
+        });
+    });
+
+    // ---- 返回顶部按钮 ----
+    const backToTop = document.getElementById('backToTop');
+    if (backToTop) {
+        let scrollTimer;
+        window.addEventListener('scroll', () => {
+            if (scrollTimer) clearTimeout(scrollTimer);
+            scrollTimer = setTimeout(() => {
+                if (window.scrollY > 300) {
+                    backToTop.classList.add('visible');
+                } else {
+                    backToTop.classList.remove('visible');
+                }
+            }, 50);
+        }, { passive: true });
+    }
+
+    // ---- Toast 通知 ----
+    function showToast(message, type) {
+        type = type || 'info';
+        const icons = { success: 'bi-check-circle-fill', error: 'bi-x-circle-fill', warning: 'bi-exclamation-triangle-fill', info: 'bi-info-circle-fill' };
+        const container = document.getElementById('toastContainer');
+        const toast = document.createElement('div');
+        toast.className = 'toast-msg ' + type;
+        toast.setAttribute('role', 'alert');
+        toast.innerHTML = '<i class="bi ' + icons[type] + ' toast-icon"></i>' +
+                          '<span>' + message + '</span>' +
+                          '<button class="toast-close" onclick="this.parentElement.remove()" aria-label="关闭通知">&times;</button>';
+        container.appendChild(toast);
+
+        // 自动消失
+        const dismissTimer = setTimeout(() => {
+            toast.style.animation = 'slideOutRight .3s ease-in forwards';
+            setTimeout(() => toast.remove(), 300);
+        }, 3500);
+
+        // 点击Toast本身提前关闭
+        toast.addEventListener('click', (e) => {
+            if (e.target === toast) {
+                clearTimeout(dismissTimer);
+                toast.style.animation = 'slideOutRight .3s ease-in forwards';
+                setTimeout(() => toast.remove(), 300);
+            }
+        });
+    }
+
+    // ---- 表格搜索 ----
+    function initTableSearch(inputId, tableSelector) {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+        input.addEventListener('keyup', function() {
+            const term = this.value.toLowerCase();
+            const rows = document.querySelectorAll(tableSelector + ' tbody tr');
+            let visible = 0;
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                const show = text.includes(term);
+                row.style.display = show ? '' : 'none';
+                if (show) visible++;
+            });
+            // 更新计数
+            const infoEl = document.getElementById(inputId + '-count');
+            if (infoEl) infoEl.textContent = visible === rows.length
+                ? '共 ' + rows.length + ' 条记录'
+                : '显示 ' + visible + ' / ' + rows.length + ' 条';
+        });
+    }
+
+    // ---- 确认删除增强 ----
+    function confirmDelete(event, itemName) {
+        if (!confirm('确定要删除「' + itemName + '」吗？此操作不可撤销。')) {
+            event.preventDefault();
+            return false;
+        }
+        return true;
+    }
+
+    // ---- 编辑模式 ----
+    function enableEdit(btn, entity, id, fields) {
+        var form = btn.closest('.table-container').previousElementSibling.querySelector('form');
+        if (!form) {
+            form = document.querySelector('.add-card form');
+        }
+        if (!form) return;
+        // 切换编辑状态
+        var isEditing = form.getAttribute('data-editing') === '1';
+        if (isEditing) {
+            cancelEdit(form);
+            return;
+        }
+        // 预填表单
+        fields.forEach(function(f) {
+            var el = form.querySelector('[name="' + f.name + '"]');
+            if (el) el.value = f.value;
+        });
+        // 切换按钮
+        form.setAttribute('data-original-action', form.action);
+        form.setAttribute('data-original-btn', form.querySelector('button[type="submit"]').innerHTML);
+        form.action = '/' + entity + '/edit/' + id;
+        form.querySelector('button[type="submit"]').innerHTML = '<i class="bi bi-check-lg"></i> 保存';
+        form.setAttribute('data-editing', '1');
+        // 添加取消按钮
+        if (!form.querySelector('.cancel-edit-btn')) {
+            var cancel = document.createElement('button');
+            cancel.type = 'button';
+            cancel.className = 'btn btn-outline-secondary ms-2 cancel-edit-btn';
+            cancel.innerHTML = '<i class="bi bi-x-lg"></i> 取消';
+            cancel.onclick = function() { cancelEdit(form); };
+            form.querySelector('button[type="submit"]').parentNode.appendChild(cancel);
+        }
+    }
+
+    function cancelEdit(form) {
+        form.action = form.getAttribute('data-original-action');
+        form.querySelector('button[type="submit"]').innerHTML = form.getAttribute('data-original-btn');
+        form.setAttribute('data-editing', '0');
+        var cancel = form.querySelector('.cancel-edit-btn');
+        if (cancel) cancel.remove();
+        form.reset();
+    }
+
+    // ---- 按钮加载状态 ----
+    function setBtnLoading(btn, loading) {
+        if (loading) {
+            btn.classList.add('loading');
+            btn.disabled = true;
+        } else {
+            btn.classList.remove('loading');
+            btn.disabled = false;
+        }
+    }
+    </script>
+
+    <footer class="text-center text-muted py-3 mt-4" role="contentinfo">
+        <small>&copy; 2026 学生选课管理系统 SCSMIS — 实训任务成果展示</small>
+    </footer>
+</body>
+</html>

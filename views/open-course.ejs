@@ -1,0 +1,73 @@
+<%- include('header', { title: '开设课程' }) %>
+
+<div class="page-header">
+    <h4><i class="bi bi-plus-circle-dotted"></i> 开设课程</h4>
+    <p>为教师分配授课课程，设置上课时间和地点</p>
+</div>
+
+<% if (typeof msg !== 'undefined' && msg) { %>
+<div class="alert alert-<%= msg.type %> d-flex align-items-center gap-2" role="alert">
+    <i class="bi <%= msg.type === 'success' ? 'bi-check-circle' : msg.type === 'warning' ? 'bi-exclamation-triangle' : 'bi-x-circle' %>"></i>
+    <span><%= msg.text %></span>
+</div>
+<% } %>
+
+<div class="card mb-4">
+    <div class="card-header"><i class="bi bi-plus-circle"></i> 新建开课记录</div>
+    <div class="card-body">
+        <form method="POST" action="/open-course" class="row g-3">
+            <!-- 选择教师 -->
+            <div class="col-md-3">
+                <label class="form-label required" for="teachSelect">教师</label>
+                <% if (user.role_type === 'teacher') { %>
+                    <input name="teach_id" class="form-control" value="<%= user.id %>" readonly>
+                    <small class="text-muted"><%= user.name %>（本人）</small>
+                <% } else { %>
+                    <select name="teach_id" id="teachSelect" class="form-select" required>
+                        <option value="">— 选择教师 —</option>
+                        <% teachers.forEach(function(t) { %>
+                            <option value="<%= t.f_teach_id %>"><%= t.f_teach_id %> - <%= t.f_name %></option>
+                        <% }) %>
+                    </select>
+                <% } %>
+            </div>
+
+            <!-- 选择课程 -->
+            <div class="col-md-3">
+                <label class="form-label required" for="courseSelect">课程</label>
+                <select name="course_id" id="courseSelect" class="form-select" required>
+                    <option value="">— 选择课程 —</option>
+                    <% courses.forEach(function(c) { %>
+                        <option value="<%= c.f_course_id %>"><%= c.f_name %>（<%= c.f_credit %>学分）</option>
+                    <% }) %>
+                </select>
+                <% if (user.role_type === 'teacher' && courses.length === 0) { %>
+                    <small class="text-muted">你已开设了全部可用课程</small>
+                <% } %>
+            </div>
+
+            <!-- 上课时间 -->
+            <div class="col-md-3">
+                <label class="form-label">上课时间</label>
+                <input name="f_time" class="form-control" placeholder="如：周一 8:00-10:00">
+            </div>
+
+            <!-- 上课地点 -->
+            <div class="col-md-3">
+                <label class="form-label">上课地点</label>
+                <input name="f_location" class="form-control" placeholder="如：教学楼A301">
+            </div>
+
+            <div class="col-12">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-circle"></i> 确认开课
+                </button>
+                <a href="/teach-view" class="btn btn-outline-secondary ms-2">
+                    <i class="bi bi-arrow-left"></i> 返回授课视图
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<%- include('footer') %>

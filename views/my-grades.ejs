@@ -1,0 +1,114 @@
+<%- include('header', { title: '我的成绩单' }) %>
+
+<div class="page-header">
+    <h4><i class="bi bi-trophy"></i> 我的成绩单</h4>
+    <p>查看已修课程成绩和绩点（GPA）</p>
+</div>
+
+<!-- 成绩汇总卡片 -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card border-primary">
+            <div class="card-body text-center">
+                <div class="fs-1 fw-bold text-primary"><%= totalCount %></div>
+                <small class="text-muted">已选课程总数</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-success">
+            <div class="card-body text-center">
+                <div class="fs-1 fw-bold text-success"><%= gradedCount %></div>
+                <small class="text-muted">已出成绩课程</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card <%= gpa && parseFloat(gpa) >= 3.0 ? 'border-success' : 'border-warning' %>">
+            <div class="card-body text-center">
+                <div class="fs-1 fw-bold <%= gpa && parseFloat(gpa) >= 3.0 ? 'text-success' : 'text-warning' %>">
+                    <%= gpa || '-' %>
+                </div>
+                <small class="text-muted">平均绩点 GPA</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 成绩明细 -->
+<div class="card">
+    <div class="card-header"><i class="bi bi-table"></i> 成绩明细</div>
+    <div class="table-responsive">
+        <table class="table mb-0" aria-label="成绩明细">
+            <thead>
+                <tr><th>#</th><th>课程名称</th><th>学分</th><th>授课教师</th><th>成绩</th><th>绩点</th><th>等级</th></tr>
+            </thead>
+            <tbody>
+                <% if (grades.length === 0) { %>
+                <tr><td colspan="7"><div class="empty-state"><i class="bi bi-journal-x"></i><p>暂无选课记录</p></div></td></tr>
+                <% } %>
+                <% grades.forEach(function(g, idx) { %>
+                <tr>
+                    <td><%= idx + 1 %></td>
+                    <td><strong><%= g.course_name %></strong></td>
+                    <td><span class="badge bg-soft-warning text-warning"><%= g.f_credit %> 学分</span></td>
+                    <td><%= g.teacher_name %></td>
+                    <td>
+                        <% if (g.f_score !== null) { %>
+                            <% var s = parseFloat(g.f_score); %>
+                            <span class="fw-bold <%= s >= 90 ? 'text-success' : s >= 60 ? 'text-primary' : 'text-danger' %>"><%= s %></span>
+                        <% } else { %>
+                            <span class="badge bg-soft-secondary text-secondary">修读中</span>
+                        <% } %>
+                    </td>
+                    <td>
+                        <% if (g.f_score !== null) {
+                            var sc = parseFloat(g.f_score);
+                            var gp = 0;
+                            if (sc >= 90) gp = 4.0;
+                            else if (sc >= 85) gp = 3.7;
+                            else if (sc >= 82) gp = 3.3;
+                            else if (sc >= 78) gp = 3.0;
+                            else if (sc >= 75) gp = 2.7;
+                            else if (sc >= 72) gp = 2.3;
+                            else if (sc >= 68) gp = 2.0;
+                            else if (sc >= 64) gp = 1.5;
+                            else if (sc >= 60) gp = 1.0;
+                        %>
+                            <span class="fw-bold <%= gp >= 3.0 ? 'text-success' : gp >= 1.0 ? 'text-primary' : 'text-danger' %>"><%= gp.toFixed(1) %></span>
+                        <% } else { %>
+                            <span class="text-muted">-</span>
+                        <% } %>
+                    </td>
+                    <td>
+                        <% if (g.f_score !== null) {
+                            var sc = parseFloat(g.f_score);
+                        %>
+                            <% if (sc >= 90) { %><span class="badge bg-success">优秀</span>
+                            <% } else if (sc >= 80) { %><span class="badge bg-primary">良好</span>
+                            <% } else if (sc >= 70) { %><span class="badge bg-info">中等</span>
+                            <% } else if (sc >= 60) { %><span class="badge bg-warning text-dark">及格</span>
+                            <% } else { %><span class="badge bg-danger">不及格</span><% } %>
+                        <% } else { %>
+                            <span class="text-muted">-</span>
+                        <% } %>
+                    </td>
+                </tr>
+                <% }) %>
+            </tbody>
+            <% if (grades.length > 0) { %>
+            <tfoot class="table-secondary fw-bold">
+                <tr>
+                    <td colspan="2" class="text-end">合计</td>
+                    <td><%= totalCredit %> 学分</td>
+                    <td colspan="2"></td>
+                    <td>GPA: <%= gpa || '-' %></td>
+                    <td></td>
+                </tr>
+            </tfoot>
+            <% } %>
+        </table>
+    </div>
+</div>
+
+<%- include('footer') %>
