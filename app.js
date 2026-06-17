@@ -397,7 +397,15 @@ app.get('/grade-entry', requireAuth, async (req, res) => {
         [teachCourses] = await pool.query('SELECT tc.*, c.f_name AS course_name FROM t_teach_course tc JOIN t_course c ON tc.f_course_id=c.f_course_id WHERE tc.f_teach_id=?', [u.id]);
     else
         [teachCourses] = await pool.query('SELECT tc.*, c.f_name AS course_name, t.f_name AS teacher_name FROM t_teach_course tc JOIN t_course c ON tc.f_course_id=c.f_course_id JOIN t_teacher t ON tc.f_teach_id=t.f_teach_id');
-    res.render('grade-entry', { user: u, teachCourses, selectedCourse: null, students: [], msg: null });
+
+    // 如果 URL 带了 course_id 和 teach_id，自动加载学生列表
+    const { course_id, teach_id, msg: qmsg } = req.query;
+    let selectedCourse = null, students = [];
+    if (course_id && teach_id) {
+        selectedCourse = { course_id, teach_id };
+        [students] = await pool.query('SELECT sc.*, s.f_name AS student_name FROM t_stu_course sc JOIN t_student s ON sc.f_stu_id=s.f_stu_id WHERE sc.f_course_id=? AND sc.f_teach_id=?', [course_id, teach_id]);
+    }
+    res.render('grade-entry', { user: u, teachCourses, selectedCourse, students, msg: qmsg || null });
 });
 
 app.post('/grade-entry/lookup', requireAuth, async (req, res) => {
@@ -424,12 +432,12 @@ app.post('/grade-entry/save', requireAuth, async (req, res) => {
     try {
         const scoreVal = score ? parseFloat(score) : null;
         if (scoreVal !== null && (scoreVal < 0 || scoreVal > 100)) {
-            return res.redirect('/grade-entry?msg=成绩范围0-100');
+            return res.redirect(`/grade-entry?course_id=${course_id}&teach_id=${teach_id}&msg=成绩范围0-100`);
         }
         await pool.query('UPDATE t_stu_course SET f_score=? WHERE f_course_id=? AND f_teach_id=? AND f_stu_id=?', [scoreVal, course_id, teach_id, stu_id]);
-        res.redirect('/grade-entry?msg=成绩保存成功');
+        res.redirect(`/grade-entry?course_id=${course_id}&teach_id=${teach_id}&msg=成绩保存成功`);
     } catch (err) {
-        res.redirect('/grade-entry?msg=保存失败');
+        res.redirect(`/grade-entry?course_id=${course_id}&teach_id=${teach_id}&msg=保存失败`);
     }
 });
 
@@ -494,6 +502,15 @@ app.get('/enroll', requireAuth, async (req, res) => {
         [teachCourses] = await pool.query('SELECT tc.*, c.f_name AS course_name, t.f_name AS teacher_name FROM t_teach_course tc JOIN t_course c ON tc.f_course_id=c.f_course_id JOIN t_teacher t ON tc.f_teach_id=t.f_teach_id WHERE tc.f_teach_id=?', [u.id]);
     else
         [teachCourses] = await pool.query('SELECT tc.*, c.f_name AS course_name, t.f_name AS teacher_name FROM t_teach_course tc JOIN t_course c ON tc.f_course_id=c.f_course_id JOIN t_teacher t ON tc.f_teach_id=t.f_teach_id');
+
+    // 学生端：直接加载自己的选课，跳过"选择学生"步骤
+    if (u.role_type === 'student') {
+        const [sel] = await pool.query('SELECT s.*, c.f_name AS college_name FROM t_student s LEFT JOIN t_college c ON s.f_college_id=c.f_college_id WHERE f_stu_id=?', [u.id]);
+        const [enrolledCourses] = await pool.query('SELECT sc.*, c.f_name AS course_name, c.f_credit FROM t_stu_course sc JOIN t_course c ON sc.f_course_id=c.f_course_id WHERE sc.f_stu_id=?', [u.id]);
+        const [total] = await pool.query('SELECT COALESCE(SUM(c.f_credit),0) AS total FROM t_stu_course sc JOIN t_course c ON sc.f_course_id=c.f_course_id WHERE sc.f_stu_id=?', [u.id]);
+        return res.render('enroll', { user: u, students: [], teachCourses, selectedStudent: sel[0], enrolledCourses, totalCredit: total[0].total, msg: qmsg });
+    }
+
     res.render('enroll', { user: u, students, teachCourses, selectedStudent: null, enrolledCourses: [], totalCredit: 0, msg: qmsg });
 });
 

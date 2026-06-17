@@ -2,7 +2,11 @@
 
 <div class="page-header">
     <h4><i class="bi bi-pencil-square"></i> 学生选课操作</h4>
+    <% if (user.role_type === 'student') { %>
+    <p>以下为你当前已选课程及学分统计</p>
+    <% } else { %>
     <p>选择学生后查看已选课程和学分，然后为其选课。总学分达100时触发器会拦截。</p>
+    <% } %>
 </div>
 
 <% if (typeof msg !== 'undefined' && msg) { %>
@@ -12,7 +16,8 @@
 </div>
 <% } %>
 
-<!-- 步骤指示器 -->
+<% if (user.role_type !== 'student') { %>
+<!-- 步骤指示器（仅教师/管理员显示） -->
 <div class="step-indicator">
     <div class="step-item active">
         <span class="step-num">1</span> 选择学生
@@ -45,6 +50,7 @@
         </form>
     </div>
 </div>
+<% } %>
 
 <% if (selectedStudent) { %>
 <!-- 学生信息卡片 -->
