@@ -353,7 +353,7 @@ app.get('/open-course', requireAuth, async (req, res) => {
 app.post('/open-course', requireAuth, async (req, res) => {
     const u = req.session.user;
     if (u.role_type === 'student') return res.status(403).send('仅教师和管理员可访问');
-    const { teach_id, course_id, f_time, f_location } = req.body;
+    const { teach_id, course_id, f_time, f_place } = req.body;
     if (u.role_type === 'teacher' && teach_id !== u.id) {
         return res.redirect('/open-course');
     }
@@ -371,7 +371,7 @@ app.post('/open-course', requireAuth, async (req, res) => {
             }
             return res.render('open-course', { user: u, teachers, courses, msg: { type: 'warning', text: '该教师已开设此课程，不可重复！' } });
         }
-        await pool.query('INSERT INTO t_teach_course (f_teach_id, f_course_id, f_time, f_location) VALUES (?,?,?,?)', [teach_id, course_id, f_time || null, f_location || null]);
+        await pool.query('INSERT INTO t_teach_course (f_teach_id, f_course_id, f_time, f_place) VALUES (?,?,?,?)', [teach_id, course_id, f_time || null, f_place || null]);
         res.redirect('/teach-view');
     } catch (err) {
         let teachers = [], courses = [];

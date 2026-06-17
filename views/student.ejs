@@ -13,7 +13,7 @@
     <div class="card-header"><i class="bi bi-plus-circle"></i> <span id="formTitle">添加学生</span></div>
     <div class="card-body">
         <form method="POST" action="/student/add" class="row g-2 align-items-end" data-original-action="/student/add" data-original-btn='<i class="bi bi-check-lg"></i> 添加' data-editing="0">
-            <div class="col-md-2"><label class="form-label required">学号</label><input name="f_stu_id" class="form-control" placeholder="学号" required></div>
+            <div class="col-md-2"><label class="form-label required">学号</label><input name="f_stu_id" class="form-control" placeholder="学号（最长20位）" maxlength="20" required></div>
             <div class="col-md-2"><label class="form-label required">姓名</label><input name="f_name" class="form-control" placeholder="姓名" required></div>
             <div class="col-md-1"><label class="form-label">性别</label><select name="f_sex" class="form-select"><option>男</option><option>女</option></select></div>
             <div class="col-md-1"><label class="form-label">生日</label><input name="f_birth" type="date" class="form-control"></div>

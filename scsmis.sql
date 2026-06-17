@@ -37,7 +37,7 @@ CREATE TABLE t_admin (
 
 -- 学生表
 CREATE TABLE t_student (
-    f_stu_id VARCHAR(12) NOT NULL PRIMARY KEY,             -- 学号，学生登录账号
+    f_stu_id VARCHAR(20) NOT NULL PRIMARY KEY,             -- 学号，学生登录账号
     f_password VARCHAR(50) NOT NULL DEFAULT '123456',      -- 密码，初始123456
     f_name VARCHAR(50) NOT NULL,                           -- 姓名
     f_sex VARCHAR(1) NOT NULL CHECK (f_sex IN ('男', '女')), -- 性别
@@ -89,7 +89,7 @@ CREATE TABLE t_teach_course (
 CREATE TABLE t_stu_course (
     f_course_id  INT          NOT NULL,     -- 课程编号
     f_teach_id   VARCHAR(6)   NOT NULL,     -- 教师工号
-    f_stu_id     VARCHAR(12)  NOT NULL,     -- 学生学号
+    f_stu_id     VARCHAR(20)  NOT NULL,     -- 学生学号
     f_score      NUMERIC(3,1),              -- 成绩，3位数字1位小数，可为空
     f_memo       VARCHAR(200),              -- 备注信息
     PRIMARY KEY (f_course_id, f_teach_id, f_stu_id),
